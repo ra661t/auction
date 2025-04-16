@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>예시입니다</title>
+  
+  <!-- 타임리프를 사용하는 파일들은 templates에 작성하고
+  그렇지 않은 정적인 파일들, js나 css, html 들을 static에 넣으면 됩니다. -->
+  <link rel="stylesheet" href="/css/test.css">
+</head>
+
+<body>
+
+  <!-- 헤더 포함 -->
+  <header th:replace="fragments/header.html :: header"></header>
+
+  <!-- 네비게이션 포함 -->
+  <nav th:replace="fragments/nav.html :: nav" style="width: 200px; margin-right: 20px;"></nav>
+
+  <!-- 페이지 콘텐츠 -->
+  <main>
+  
+  </main>
+
+  <!-- 푸터 포함 -->
+  <footer th:replace="fragments/footer.html :: footer"></footer>
+
+
+</body>
+
+</html>

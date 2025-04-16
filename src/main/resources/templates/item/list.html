@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>경매 목록</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="container">
+    <h2>경매 목록</h2>
+
+    <div style="margin-bottom: 10px;">
+        <a th:href="@{/items/new}">
+            <button>+ 경매 등록</button>
+        </a>
+    </div>
+
+    <table border="1" width="100%" cellspacing="0" cellpadding="8">
+        <thead>
+        <tr>
+            <th>번호</th>
+            <th>상품명</th>
+            <th>시작가</th>
+            <th>현재가</th>
+            <th>상태</th>
+            <th>종료 시간</th>
+            <th>남은 시간</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${itemList.content}">
+            <td th:text="${item.id}">1</td>
+            <td>
+                <a th:href="@{/items/{id}(id=${item.id})}" th:text="${item.itemName}">상품명</a>
+            </td>
+            <td th:text="${item.startingPrice}">10000</td>
+            <td th:text="${item.startingPrice}">10000</td> <!-- 현재가는 입찰 기능 없으므로 시작가로 표시 -->
+            <td th:text="${item.auctionStatus}">ACTIVE</td>
+            <td th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">2025-04-01</td>
+            <td>
+                <span th:if="${item.endTime.isAfter(T(java.time.LocalDateTime).now())}">
+                    진행 중
+                </span>
+                <span th:if="${item.endTime.isBefore(T(java.time.LocalDateTime).now())}">
+                    종료됨
+                </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- 페이지네이션 -->
+    <div style="margin-top: 20px; text-align: center;">
+        <span th:if="${itemList.hasPrevious()}">
+            <a th:href="@{/items/list(page=${itemList.number - 1})}">이전</a>
+        </span>
+
+        <span th:text="${itemList.number + 1}">1</span> /
+        <span th:text="${itemList.totalPages}">1</span>
+
+        <span th:if="${itemList.hasNext()}">
+            <a th:href="@{/items/list(page=${itemList.number + 1})}">다음</a>
+        </span>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!-- templates/notifications/modal.html -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true"
+     xmlns:th="http://www.thymeleaf.org">
+    <div class="modal-dialog modal-dialog-scrollable modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notificationModalLabel">🔔 최근 알림</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+            </div>
+            <div class="modal-body p-2" xmlns:th="http://www.thymeleaf.org">
+                <div th:if="${#lists.isEmpty(notifications)}" class="text-muted text-center">
+                    알림이 없습니다.
+                </div>
+                <ul class="list-group list-group-flush" th:if="${!#lists.isEmpty(notifications)}">
+                    <li class="list-group-item d-flex justify-content-between align-items-start mb-1"
+                        th:each="noti : ${notifications}"
+                        th:classappend="${!noti.read} ? 'list-group-item-warning'">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold">
+                                <i class="bi bi-bell-fill me-1"></i>
+                                <span th:text="${noti.type}">알림유형</span>
+                            </div>
+                            <div th:text="${noti.message}">알림 메시지</div>
+                            <div class="text-muted small" th:text="${#temporals.format(noti.notifiedAt, 'yyyy-MM-dd HH:mm')}">알림시간</div>
+                        </div>
+                        <div class="d-flex flex-column ms-2">
+                            <form th:if="${!noti.read}" th:action="@{/notifications/read}" method="post" class="mb-1">
+                                <input type="hidden" name="id" th:value="${noti.id}" />
+                                <button class="btn btn-sm btn-outline-primary">읽음</button>
+                            </form>
+                            <form th:action="@{/notifications/delete}" method="post">
+                                <input type="hidden" name="id" th:value="${noti.id}" />
+                                <button class="btn btn-sm btn-outline-danger">삭제</button>
+                            </form>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <form th:action="@{/notifications/readAll}" method="post">
+                    <button class="btn btn-outline-success btn-sm">전체 읽음</button>
+                </form>
+                <a class="btn btn-sm btn-primary" th:href="@{/notifications}">전체 보기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 🟡 알림 뱃지 초기화 및 실시간 업데이트 스크립트 -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('notificationModal');
+        if (modal) {
+            modal.addEventListener('show.bs.modal', function () {
+                const badge = document.getElementById('notification-count');
+                if (badge) {
+                    badge.textContent = '';
+                }
+            });
+        }
+
+        // 알림 개수 뱃지 실시간 업데이트 (30초마다)
+        setInterval(() => {
+            fetch('/notifications/unreadCount')
+                .then(response => response.json())
+                .then(count => {
+                    const badge = document.getElementById('notification-count');
+                    if (badge) {
+                        badge.textContent = count > 0 ? count : '';
+                    }
+                })
+                .catch(err => console.error('알림 개수 조회 실패:', err));
+        }, 30000);
+    });
+    /*]]>*/
+</script>

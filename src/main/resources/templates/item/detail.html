@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>경매 상세</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="container">
+    <h2 th:text="${item.itemName}">상품명</h2>
+
+    <div>
+        <p><strong>시작가:</strong> <span th:text="${item.startingPrice}">10000</span></p>
+        <p><strong>설명:</strong> <span th:text="${item.itemDescription}">상품 설명</span></p>
+        <p><strong>경매 상태:</strong> <span th:text="${item.auctionStatus}">ACTIVE</span></p>
+        <p><strong>종료 시간:</strong>
+            <span th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">2025-04-01</span>
+        </p>
+
+        <p>
+            <strong>남은 시간:</strong>
+            <span th:if="${item.endTime.isAfter(T(java.time.LocalDateTime).now())}">
+                입찰 가능
+            </span>
+            <span th:if="${item.endTime.isBefore(T(java.time.LocalDateTime).now())}">
+                입찰 종료
+            </span>
+        </p>
+
+        <div th:if="${item.itemImage}">
+            <img th:src="${item.itemImage}" alt="상품 이미지" width="300">
+        </div>
+    </div>
+
+    <!-- 입찰 버튼: 작성자가 아니고, 입찰 가능할 때만 -->
+    <div th:if="${item.seller.email != currentUserEmail and item.endTime.isAfter(T(java.time.LocalDateTime).now())}" style="margin-top: 20px;">
+        <form th:action="@{/bids/place}" method="post">
+            <input type="hidden" name="itemId" th:value="${item.id}" />
+            <label for="bidAmount">입찰가:</label>
+            <input type="number" name="bidAmount" required min="0" step="100" />
+            <button type="submit">입찰하기</button>
+        </form>
+    </div>
+
+    <!-- 💳 결제 버튼: 낙찰자이면서 아직 결제하지 않았고 경매 종료 이후일 때 -->
+    <div th:if="${isWinner and notPaid and item.endTime.isBefore(T(java.time.LocalDateTime).now())}" style="margin-top: 20px;">
+        <form th:action="@{/payments/pay}" method="post">
+            <input type="hidden" name="itemId" th:value="${item.id}" />
+            <button type="submit">결제하기</button>
+        </form>
+    </div>
+
+    <!-- ✅ 결제 완료 상태 표시 -->
+    <div th:if="${isWinner and not notPaid}" style="margin-top: 20px;">
+        <p><strong>✅ 결제 완료되었습니다.</strong></p>
+    </div>
+
+    <!-- ✏️ 수정/삭제 버튼: 작성자만 표시 -->
+    <div th:if="${item.seller.email == currentUserEmail}" style="margin-top: 20px;">
+        <a th:href="@{/items/{id}/edit(id=${item.id})}">
+            <button>수정</button>
+        </a>
+
+        <form th:action="@{/items/{id}/delete(id=${item.id})}" method="post" style="display:inline;">
+            <button type="submit" onclick="return confirm('정말 삭제하시겠습니까?')">삭제</button>
+        </form>
+    </div>
+
+    <p style="margin-top: 20px;">
+        <a th:href="@{/items/list}">← 목록으로 돌아가기</a>
+    </p>
+</div>
+</body>
+</html>

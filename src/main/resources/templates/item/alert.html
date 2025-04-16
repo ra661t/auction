@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>알림</title>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        alert([[${message}]]);
+        window.location.href = [[${redirectUrl}]];
+        /*]]>*/
+    </script>
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>홈 - EasyBid</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">🏠 EasyBid</a>
+
+        <ul class="navbar-nav ms-auto">
+            <!-- 🔔 알림 아이콘 -->
+            <li class="nav-item">
+                <a class="nav-link position-relative" th:href="@{/notifications}">
+                    <i class="bi bi-bell-fill"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          id="unread-badge">0</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h2>EasyBid 경매 시스템에 오신 것을 환영합니다!</h2>
+        <p class="text-muted">서비스를 이용해 주셔서 감사합니다.</p>
+    </div>
+
+    <div class="text-center mb-4">
+        <!-- 마이페이지 버튼 -->
+        <a th:href="@{/mypage}" class="btn btn-outline-primary me-2">마이페이지</a>
+        <!-- 로그아웃 -->
+        <form th:action="@{/logout}" method="post" style="display: inline;">
+            <button type="submit" class="btn btn-outline-danger">로그아웃</button>
+        </form>
+    </div>
+
+    <hr class="my-4"/>
+
+    <div class="text-center">
+        <a th:href="@{/items/list}" class="btn btn-lg btn-success">
+            ▶ 경매 보러 가기
+        </a>
+    </div>
+</div>
+
+<!-- 알림 뱃지 실시간 업데이트 -->
+<script>
+    setInterval(() => {
+        fetch('/notifications/unreadCount')
+            .then(res => res.json())
+            .then(count => {
+                const badge = document.getElementById('unread-badge');
+                if (badge) {
+                    badge.textContent = count > 0 ? count : '';
+                    badge.style.display = count > 0 ? 'inline-block' : 'none';
+                }
+            })
+            .catch(err => console.warn('알림 fetch 실패:', err));
+    }, 30000);
+</script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>경매 등록</title>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body>
+<div class="container">
+    <h2>경매 상품 등록</h2>
+
+    <form th:action="@{/items/upload}" th:object="${item}" method="post">
+        <div>
+            <label for="itemName">상품명:</label>
+            <input type="text" id="itemName" th:field="*{itemName}" required />
+        </div>
+
+        <div>
+            <label for="startingPrice">시작가:</label>
+            <input type="number" step="0.01" id="startingPrice" th:field="*{startingPrice}" required />
+        </div>
+
+        <div>
+            <label for="itemDescription">설명:</label>
+            <textarea id="itemDescription" th:field="*{itemDescription}" rows="4" cols="50"></textarea>
+        </div>
+
+        <div>
+            <label for="itemImage">이미지 URL:</label>
+            <input type="text" id="itemImage" th:field="*{itemImage}" />
+        </div>
+
+        <div>
+            <label for="endTime">종료 시간:</label>
+            <input type="datetime-local" id="endTime" th:field="*{endTime}" required />
+        </div>
+
+        <div>
+            <button type="submit">등록</button>
+        </div>
+    </form>
+
+    <p><a th:href="@{/items/list}">← 목록으로 돌아가기</a></p>
+</div>
+</body>
+</html>

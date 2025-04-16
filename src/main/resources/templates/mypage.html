@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .container {
+            max-width: 960px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .user-info img {
+            border-radius: 10px;
+        }
+        .tab-link {
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            margin-right: 8px;
+            text-decoration: none;
+            color: #333;
+        }
+        .tab-link:hover {
+            background: #ddd;
+            text-decoration: none;
+        }
+        .form-inline input,
+        .form-inline select,
+        .form-inline button {
+            margin-right: 10px;
+        }
+        .form-inline {
+            margin-bottom: 20px;
+        }
+        .badge {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+<!-- ✅ 상단 내비게이션 -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/}">🏠 EasyBid</a>
+
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/mypage}">마이페이지</a>
+                </li>
+                <li class="nav-item">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button class="btn btn-outline-secondary btn-sm" type="submit">로그아웃</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4">마이페이지</h2>
+
+    <!-- 사용자 정보 -->
+    <div class="mb-4 user-info">
+        <p><strong>이메일:</strong> <span th:text="${user.email}">이메일</span></p>
+        <p><strong>이름:</strong> <span th:text="${user.name}">이름</span></p>
+        <p><strong>전화번호:</strong> <span th:text="${user.phone}">전화번호</span></p>
+        <div th:if="${user.imageUrl}">
+            <img th:src="${user.imageUrl}" alt="프로필 이미지" width="150" height="150">
+        </div>
+        <div th:if="${user.imageUrl == null}">
+            <p class="text-muted">등록된 이미지가 없습니다.</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- 검색 및 필터 -->
+    <form th:action="@{/mypage}" method="get" class="form-inline d-flex flex-wrap align-items-center">
+        <input type="text" class="form-control form-control-sm" name="keyword" placeholder="상품명 검색" th:value="${keyword}" />
+        <select name="sort" class="form-select form-select-sm">
+            <option value="latest" th:selected="${sort == 'latest'}">최신순</option>
+            <option value="priceDesc" th:selected="${sort == 'priceDesc'}">입찰가 높은순</option>
+            <option value="priceAsc" th:selected="${sort == 'priceAsc'}">입찰가 낮은순</option>
+        </select>
+        <div class="form-check mx-2">
+            <input class="form-check-input" type="checkbox" name="winnerOnly" th:checked="${winnerOnly}" id="winnerOnlyCheck"/>
+            <label class="form-check-label" for="winnerOnlyCheck">낙찰만 보기</label>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">검색</button>
+    </form>
+
+    <!-- 탭 링크 -->
+    <div class="mb-3">
+        <a th:href="@{/mypage(tab='bids')}" class="tab-link">📝 입찰한 내역</a>
+        <a th:href="@{/mypage(tab='winners')}" class="tab-link">🏆 낙찰 내역</a>
+        <a th:href="@{/mypage(tab='payments')}" class="tab-link">💳 결제 완료</a>
+    </div>
+
+    <!-- 입찰 내역 테이블 -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>상품명</th>
+                <th>입찰가</th>
+                <th>입찰 시간</th>
+                <th>경매 상태</th>
+                <th>낙찰 여부</th>
+                <th>결제</th>
+                <th>취소</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="bid : ${myBids}">
+                <td><a th:href="@{/items/{id}(id=${bid.item.id})}" th:text="${bid.item.itemName}">상품명</a></td>
+                <td th:text="${#numbers.formatDecimal(bid.bidPrice, 0, 'COMMA', 2, 'POINT')} + ' 원'"></td>
+                <td th:text="${#temporals.format(bid.bidTime, 'yyyy-MM-dd HH:mm')}">시간</td>
+                <td><span class="badge bg-info text-dark" th:text="${bid.item.auctionStatus}">ACTIVE</span></td>
+                <td>
+                    <span th:if="${bid.item.endTime > T(java.time.LocalDateTime).now()}">-</span>
+                    <span th:if="${bid.item.endTime <= T(java.time.LocalDateTime).now()}">
+                        <span th:if="${bid.winner}" class="badge bg-success">✅ 낙찰</span>
+                        <span th:if="${!bid.winner}" class="badge bg-secondary">❌ 실패</span>
+                    </span>
+                </td>
+                <td>
+                    <div th:if="${bid.item.endTime <= T(java.time.LocalDateTime).now()}">
+                        <div th:if="${bid.winner}">
+                            <div th:if="${bid.paymentStatus != null}">
+                                <div th:switch="${bid.paymentStatus.name()}">
+                                    <div th:case="'PENDING'">
+                                        <form th:action="@{/payments/form}" method="get">
+                                            <input type="hidden" name="itemId" th:value="${bid.item.id}" />
+                                            <button type="submit" class="btn btn-sm btn-success">💳 결제하기</button>
+                                        </form>
+                                    </div>
+                                    <div th:case="'COMPLETED'">
+                                        <span class="badge bg-success">✅ 결제 완료</span>
+                                    </div>
+                                    <div th:case="*">
+                                        <span class="text-muted">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${bid.paymentStatus == null}">
+                                <span class="text-muted">-</span>
+                            </div>
+                        </div>
+                        <div th:if="${!bid.winner}">
+                            <span class="text-muted">-</span>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <form th:if="${bid.item.endTime > T(java.time.LocalDateTime).now()}" th:action="@{/bids/cancel}" method="post">
+                        <input type="hidden" name="bidId" th:value="${bid.id}" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 입찰을 취소하시겠습니까?')">취소</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(myBids)}">
+                <td colspan="7" class="text-center text-muted">입찰한 내역이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>결제하기</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .card { border: 1px solid #ccc; border-radius: 8px; padding: 20px; }
+        .card h2 { margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; }
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 8px; box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50; color: white; padding: 10px 20px;
+            border: none; border-radius: 5px; cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h2>💳 결제하기</h2>
+
+        <!-- 결제 정보 표시 -->
+        <p><strong>상품명:</strong> <span th:text="${item.itemName}">상품명</span></p>
+        <p><strong>최종 낙찰가:</strong> <span th:text="${#numbers.formatDecimal(finalPrice, 0, 'COMMA', 2, 'POINT')} + ' 원'">10,000 원</span></p>
+        <p><strong>판매자:</strong> <span th:text="${item.seller.name}">판매자</span></p>
+
+        <!-- 결제 요청 폼 -->
+        <form th:action="@{/payments/pay}" method="post">
+            <input type="hidden" name="itemId" th:value="${item.id}" />
+
+            <div class="form-group">
+                <label for="cardNumber">카드 번호</label>
+                <input type="text" id="cardNumber" name="cardNumber" placeholder="1234-5678-9012-3456" required>
+            </div>
+            <div class="form-group">
+                <label for="cardName">카드 소유자</label>
+                <input type="text" id="cardName" name="cardName" placeholder="홍길동" required>
+            </div>
+            <div class="form-group">
+                <label for="expiry">만료일 (MM/YY)</label>
+                <input type="text" id="expiry" name="expiry" placeholder="12/27" required>
+            </div>
+            <div class="form-group">
+                <label for="cvc">CVC</label>
+                <input type="text" id="cvc" name="cvc" placeholder="123" required>
+            </div>
+
+            <button type="submit">결제 완료</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
