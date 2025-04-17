@@ -1,30 +1,143 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml" lang="ko">
 <head>
     <meta charset="UTF-8">
     <title>경매 목록</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <link rel="stylesheet" href="/css/style.css"/>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background-color: #f9f9f9;
+        }
+        .container {
+            width: 90%;
+            margin: 30px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            white-space: nowrap;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        td:nth-child(1),
+        td:nth-child(3),
+        td:nth-child(4) {
+            text-align: right;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .pagination {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pagination a {
+            margin: 0 5px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .filter-form {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
+<!-- 상단 네비게이션 (항상 표시, 모바일도 펼쳐짐) -->
+<nav class="navbar navbar-light bg-light shadow-sm mb-3">
+    <div class="container-fluid d-flex justify-content-between align-items-center px-4">
+        <a class="navbar-brand fw-bold fs-4" href="/">🏠 EasyBid</a>
+        <div class="d-flex align-items-center gap-2">
+            <!-- 🔐 로그인 사용자 전용 -->
+            <div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-2">
+                <a class="nav-link position-relative" th:href="@{/notifications}">
+                    <i class="bi bi-bell-fill fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          id="unread-badge">0</span>
+                </a>
+                <a class="btn btn-outline-primary btn-sm" th:href="@{/mypage}">마이페이지</a>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">로그아웃</button>
+                </form>
+            </div>
+
+            <!-- 🔓 비로그인 사용자 전용 -->
+            <div sec:authorize="isAnonymous()" class="d-flex align-items-center gap-2">
+                <a class="btn btn-outline-success btn-sm" th:href="@{/login}">로그인</a>
+                <a class="btn btn-outline-primary btn-sm" th:href="@{/signup}">회원가입</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+
+
 <div class="container">
     <h2>경매 목록</h2>
 
-    <div style="margin-bottom: 10px;">
-        <a th:href="@{/items/new}">
-            <button>+ 경매 등록</button>
-        </a>
-    </div>
+    <!-- 🔍 검색 + 정렬 + 상태 필터 -->
+    <form th:action="@{/items/list}" method="get" class="filter-form">
+        <div>
+            <a th:href="@{/items/new}">
+                <button type="button">+ 경매 등록</button>
+            </a>
+        </div>
+        <div>
+            <input type="text" name="keyword" placeholder="상품명 검색"
+                   th:value="${keyword}" style="padding: 6px; width: 200px;" />
 
-    <table border="1" width="100%" cellspacing="0" cellpadding="8">
+            <select name="sort" style="padding: 6px;" th:value="${sort}">
+                <option value="">정렬 선택</option>
+                <option value="id,desc">최신순</option>
+                <option value="endTime,asc">종료 임박순</option>
+                <option value="startingPrice,desc">시작가 높은순</option>
+                <option value="startingPrice,asc">시작가 낮은순</option>
+            </select>
+
+            <select name="status" style="padding: 6px;" th:value="${status}">
+                <option value="">전체 상태</option>
+                <option value="ACTIVE">진행 중</option>
+                <option value="ENDED">종료됨</option>
+            </select>
+
+            <button type="submit" style="padding: 6px 12px;">검색</button>
+        </div>
+    </form>
+
+    <!-- 📋 경매 테이블 -->
+    <table>
         <thead>
         <tr>
-            <th>번호</th>
-            <th>상품명</th>
-            <th>시작가</th>
-            <th>현재가</th>
-            <th>상태</th>
-            <th>종료 시간</th>
-            <th>남은 시간</th>
+            <th style="width: 5%;">번호</th>
+            <th style="width: 25%;">상품명</th>
+            <th style="width: 10%;">시작가</th>
+            <th style="width: 10%;">현재가</th>
+            <th style="width: 10%;">상태</th>
+            <th style="width: 20%;">종료 시간</th>
+            <th style="width: 20%;">남은 시간</th>
         </tr>
         </thead>
         <tbody>
@@ -34,7 +147,7 @@
                 <a th:href="@{/items/{id}(id=${item.id})}" th:text="${item.itemName}">상품명</a>
             </td>
             <td th:text="${item.startingPrice}">10000</td>
-            <td th:text="${item.startingPrice}">10000</td> <!-- 현재가는 입찰 기능 없으므로 시작가로 표시 -->
+            <td th:text="${item.startingPrice}">10000</td> <!-- 입찰 기능 없으므로 시작가로 표시 -->
             <td th:text="${item.auctionStatus}">ACTIVE</td>
             <td th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">2025-04-01</td>
             <td>
@@ -50,18 +163,34 @@
     </table>
 
     <!-- 페이지네이션 -->
-    <div style="margin-top: 20px; text-align: center;">
+    <div class="pagination">
         <span th:if="${itemList.hasPrevious()}">
-            <a th:href="@{/items/list(page=${itemList.number - 1})}">이전</a>
+            <a th:href="@{/items/list(page=${itemList.number - 1}, keyword=${keyword}, sort=${sort}, status=${status})}">이전</a>
         </span>
 
         <span th:text="${itemList.number + 1}">1</span> /
         <span th:text="${itemList.totalPages}">1</span>
 
         <span th:if="${itemList.hasNext()}">
-            <a th:href="@{/items/list(page=${itemList.number + 1})}">다음</a>
+            <a th:href="@{/items/list(page=${itemList.number + 1}, keyword=${keyword}, sort=${sort}, status=${status})}">다음</a>
         </span>
     </div>
 </div>
+<script>
+    // 로그인 사용자일 때만 알림 수 갱신
+    setInterval(() => {
+        const badge = document.getElementById('unread-badge');
+        if (badge) {
+            fetch('/notifications/unreadCount')
+                .then(res => res.json())
+                .then(count => {
+                    badge.textContent = count > 0 ? count : '';
+                    badge.style.display = count > 0 ? 'inline-block' : 'none';
+                })
+                .catch(err => console.warn('알림 가져오기 실패:', err));
+        }
+    }, 30000);
+</script>
+
 </body>
 </html>

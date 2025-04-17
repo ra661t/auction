@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .map(user -> org.springframework.security.core.userdetails.User
                         .withUsername(user.getEmail())
                         .password(user.getPassword())
-                        .authorities("ROLE_USER") // 기본 권한을 고정값으로 설정
+                        .authorities("ROLE_USER") // 기본 권한
                         .build())
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -45,15 +45,24 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/signup", "/css/**").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/",                   // 홈
+                                "/signup",             // 회원가입
+                                "/login",              // 로그인 페이지
+                                "/css/**", "/js/**", "/images/**", // 정적 리소스
+                                "/items/list",         // 경매 목록
+                                "/items/*"             // 경매 상세
+                        ).permitAll()
+                        .anyRequest().authenticated() // 그 외는 인증 필요
                 )
                 .formLogin(login -> login
-                        .loginPage("/login").permitAll()
-                        .defaultSuccessUrl("/", true)
+                        .loginPage("/login")
+                        .permitAll()
+                        .defaultSuccessUrl("/", true) // 로그인 성공 시 홈으로
                 )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/login").permitAll()
+                        .logoutSuccessUrl("/login")
+                        .permitAll()
                 );
 
         return http.build();
