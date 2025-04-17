@@ -7,9 +7,7 @@ import com.easybid.repository.BidRepository;
 import com.easybid.repository.ItemRepository;
 import com.easybid.repository.PaymentRepository;
 import com.easybid.repository.UserRepository;
-import com.easybid.service.NotificationService;
 import jakarta.transaction.Transactional;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -73,17 +71,17 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
-    // ✅ 최고 입찰가 조회
+    // 최고 입찰가 조회
     public Optional<Bid> findHighestBidByItem(Item item) {
         return bidRepository.findTopByItemOrderByBidPriceDesc(item);
     }
 
-    // ✅ 결제 여부 확인
+    // 결제 여부 확인
     public boolean isPaymentExists(Long itemId) {
         return paymentRepository.existsByItemId(itemId);
     }
 
-    // ✅ 경매 종료 시간 도달 시 상태 자동 변경 + 알림 처리
+    // 경매 종료 시간 도달 시 상태 자동 변경 + 알림 처리
     @Transactional
     public void updateAuctionStatusIfExpired(Item item) {
         if (item.getAuctionStatus() == Item.AuctionStatus.ACTIVE &&
@@ -91,24 +89,28 @@ public class ItemService {
             item.setAuctionStatus(Item.AuctionStatus.ENDED);
             itemRepository.save(item);
 
-            // 낙찰자 조회
             Optional<Bid> highestBid = bidRepository.findTopByItemOrderByBidPriceDesc(item);
             User winner = highestBid.map(Bid::getBidder).orElse(null);
 
-            // 알림 전송
-            notificationService.notifyAuctionResult(item.getSeller(), item.getItemName(), winner);
+            // 알림 전송: 판매자, 낙찰자, 입찰자 전원에게
+            notificationService.notifyAuctionResult(item.getSeller(), item.getItemName(), winner, item);
         }
     }
-    // ✅ 홈 화면용 - 종료되지 않은 경매 중 종료 시간이 가까운 6개 조회
+
+    // 홈 화면용 - 종료되지 않은 경매 중 종료 시간이 가까운 6개 조회
     public List<Item> getTop6ActiveItems() {
         return itemRepository.findTop6ByAuctionStatusAndEndTimeAfterOrderByEndTimeAsc(
                 Item.AuctionStatus.ACTIVE, LocalDateTime.now());
     }
+
+    // 키워드로 검색
     public Page<Item> searchItemsByName(String keyword, Pageable pageable) {
         Page<Item> items = itemRepository.findByItemNameContainingIgnoreCase(keyword, pageable);
-        items.forEach(this::updateAuctionStatusIfExpired); // 상태 자동 갱신
+        items.forEach(this::updateAuctionStatusIfExpired);
         return items;
     }
+
+    // 상태로 검색
     public Page<Item> searchItemsByStatus(String status, Pageable pageable) {
         Item.AuctionStatus auctionStatus = Item.AuctionStatus.valueOf(status);
         Page<Item> items = itemRepository.findByAuctionStatus(auctionStatus, pageable);
@@ -116,11 +118,11 @@ public class ItemService {
         return items;
     }
 
+    // 키워드 + 상태 동시 검색
     public Page<Item> searchItemsByNameAndStatus(String keyword, String status, Pageable pageable) {
         Item.AuctionStatus auctionStatus = Item.AuctionStatus.valueOf(status);
         Page<Item> items = itemRepository.findByItemNameContainingIgnoreCaseAndAuctionStatus(keyword, auctionStatus, pageable);
         items.forEach(this::updateAuctionStatusIfExpired);
         return items;
     }
-
 }

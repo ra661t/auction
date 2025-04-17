@@ -22,4 +22,8 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     // ✅ 특정 유저의 입찰 중 상품명 키워드 검색
     @Query("SELECT b FROM Bid b WHERE b.bidder = :user AND b.item.itemName LIKE %:keyword% ORDER BY b.bidTime DESC")
     List<Bid> searchMyBids(@Param("user") User user, @Param("keyword") String keyword);
+
+    // ✅ 특정 상품에 입찰한 모든 사용자 조회 (중복 제거)
+    @Query("SELECT DISTINCT b.bidder FROM Bid b WHERE b.item = :item")
+    List<User> findDistinctBiddersByItem(@Param("item") Item item);
 }

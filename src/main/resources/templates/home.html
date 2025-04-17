@@ -50,20 +50,16 @@
 
     <hr class="my-4"/>
 
-
-
     <!-- 🔳 경매 카드 UI -->
     <div>
         <h4 class="mb-4">🔥 진행 중인 경매</h4>
         <div class="row row-cols-1 row-cols-md-3 g-4">
             <div class="col" th:each="item : ${itemList}">
                 <div class="card h-100 shadow-sm">
-                    <!-- ✅ 이미지 처리 (null-safe 연산자 사용) -->
                     <img th:src="${item.itemImage} ?: '/images/default.jpg'"
                          class="card-img-top"
                          alt="상품 이미지"
                          style="height: 200px; object-fit: cover;"/>
-
                     <div class="card-body">
                         <h5 class="card-title" th:text="${item.itemName}">상품명</h5>
                         <p class="card-text">
@@ -88,7 +84,7 @@
 
 <!-- 알림 뱃지 실시간 업데이트 -->
 <script>
-    setInterval(() => {
+    function updateBadgeCount() {
         fetch('/notifications/unreadCount')
             .then(res => res.json())
             .then(count => {
@@ -97,10 +93,56 @@
                     badge.textContent = count > 0 ? count : '';
                     badge.style.display = count > 0 ? 'inline-block' : 'none';
                 }
-            })
-            .catch(err => console.warn('알림 fetch 실패:', err));
-    }, 30000);
+            });
+    }
+    setInterval(updateBadgeCount, 30000);
 </script>
+
 <div th:replace="fragments/footer :: footer"></div>
+
+<!-- ✅ 실시간 알림 Toast UI -->
+<div id="toast-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+<!-- SockJS + STOMP CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+    let stompClient = null;
+
+    function connectWebSocket() {
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, () => {
+            stompClient.subscribe("/user/queue/notifications", function (message) {
+                const noti = JSON.parse(message.body);
+                showToastNotification(noti.type, noti.message);
+                updateBadgeCount();
+            });
+        });
+    }
+
+    function showToastNotification(type, message) {
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+
+        toast.className = "toast align-items-center text-bg-primary border-0 show mb-2";
+        toast.setAttribute("role", "alert");
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    🔔 <strong>${type}</strong> - ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    document.addEventListener("DOMContentLoaded", connectWebSocket);
+</script>
 </body>
 </html>
