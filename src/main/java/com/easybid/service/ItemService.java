@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -98,4 +99,28 @@ public class ItemService {
             notificationService.notifyAuctionResult(item.getSeller(), item.getItemName(), winner);
         }
     }
+    // ✅ 홈 화면용 - 종료되지 않은 경매 중 종료 시간이 가까운 6개 조회
+    public List<Item> getTop6ActiveItems() {
+        return itemRepository.findTop6ByAuctionStatusAndEndTimeAfterOrderByEndTimeAsc(
+                Item.AuctionStatus.ACTIVE, LocalDateTime.now());
+    }
+    public Page<Item> searchItemsByName(String keyword, Pageable pageable) {
+        Page<Item> items = itemRepository.findByItemNameContainingIgnoreCase(keyword, pageable);
+        items.forEach(this::updateAuctionStatusIfExpired); // 상태 자동 갱신
+        return items;
+    }
+    public Page<Item> searchItemsByStatus(String status, Pageable pageable) {
+        Item.AuctionStatus auctionStatus = Item.AuctionStatus.valueOf(status);
+        Page<Item> items = itemRepository.findByAuctionStatus(auctionStatus, pageable);
+        items.forEach(this::updateAuctionStatusIfExpired);
+        return items;
+    }
+
+    public Page<Item> searchItemsByNameAndStatus(String keyword, String status, Pageable pageable) {
+        Item.AuctionStatus auctionStatus = Item.AuctionStatus.valueOf(status);
+        Page<Item> items = itemRepository.findByItemNameContainingIgnoreCaseAndAuctionStatus(keyword, auctionStatus, pageable);
+        items.forEach(this::updateAuctionStatusIfExpired);
+        return items;
+    }
+
 }

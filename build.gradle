@@ -43,6 +43,8 @@ dependencies {
 	implementation("com.sun.xml.bind:jaxb-impl:4.0.1")
 	implementation("com.sun.xml.bind:jaxb-core:4.0.1")
 	implementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
+	// ✅ 🔥 이게 있어야 sec:authorize 동작함!
+	implementation ("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 }
 
 tasks.named('test') {

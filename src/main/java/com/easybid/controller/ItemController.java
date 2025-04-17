@@ -7,7 +7,9 @@ import jakarta.servlet.http.HttpSession;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,11 +29,46 @@ public class ItemController {
 
     // 전체 경매 목록
     @GetMapping("/list")
-    public String getAllItems(@PageableDefault(size = 10, sort = "id") Pageable pageable, Model model) {
-        Page<Item> itemList = itemService.getItemList(pageable);
+    public String getAllItems(@RequestParam(required = false) String keyword,
+                              @RequestParam(required = false) String sort,
+                              @RequestParam(required = false) String status,
+                              @RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "10") int size,
+                              Model model) {
+
+        // ✅ 기본 상태값: "ACTIVE"
+        if (status == null || status.isBlank()) {
+            status = "ACTIVE";
+        }
+
+        // ✅ 정렬 파라미터 처리
+        Sort sortOption = Sort.by("id").descending(); // 기본값
+        if (sort != null && !sort.isBlank()) {
+            String[] parts = sort.split(",");
+            if (parts.length == 2) {
+                sortOption = "asc".equalsIgnoreCase(parts[1])
+                        ? Sort.by(parts[0]).ascending()
+                        : Sort.by(parts[0]).descending();
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sortOption);
+        Page<Item> itemList;
+
+        // ✅ 필터 조합 처리
+        if (keyword != null && !keyword.isBlank()) {
+            itemList = itemService.searchItemsByNameAndStatus(keyword, status, pageable);
+        } else {
+            itemList = itemService.searchItemsByStatus(status, pageable);
+        }
+
         model.addAttribute("itemList", itemList);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("sort", sort);
+        model.addAttribute("status", status);
         return "item/list";
     }
+
 
     // 경매 등록 폼
     @GetMapping("/new")
