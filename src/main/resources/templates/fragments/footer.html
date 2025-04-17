@@ -1,4 +1,32 @@
 <!-- footer.html -->
 <footer th:fragment="footer">
     <p>&copy; EasyBid</p>
+
+    <!-- ✅ 로그인된 사용자만 WebSocket 알림 스크립트 실행 -->
+    <div sec:authorize="isAuthenticated()">
+        <!-- SockJS & STOMP 라이브러리 -->
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.4/lib/stomp.min.js"></script>
+
+        <!-- 실시간 알림 WebSocket 스크립트 -->
+        <script th:inline="javascript">
+            const socket = new SockJS('/ws');
+            const stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                console.log('✅ WebSocket 연결 성공:', frame);
+
+                stompClient.subscribe('/user/queue/notifications', function (message) {
+                    const msg = message.body;
+                    alert('🔔 알림: ' + msg);
+
+                    const badge = document.getElementById("unread-badge");
+                    if (badge) {
+                        badge.textContent = '!';
+                        badge.style.display = 'inline-block';
+                    }
+                });
+            });
+        </script>
+    </div>
 </footer>

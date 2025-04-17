@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .map(user -> org.springframework.security.core.userdetails.User
                         .withUsername(user.getEmail())
                         .password(user.getPassword())
-                        .authorities("ROLE_USER") // 기본 권한
+                        .authorities("ROLE_USER")
                         .build())
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -48,22 +48,24 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/",                   // 홈
                                 "/signup",             // 회원가입
-                                "/login",              // 로그인 페이지
-                                "/css/**", "/js/**", "/images/**", // 정적 리소스
+                                "/login",              // 로그인
+                                "/css/**", "/js/**", "/images/**", // 정적 자원
                                 "/items/list",         // 경매 목록
-                                "/items/*"             // 경매 상세
+                                "/items/*",            // 경매 상세
+                                "/ws/**"               // 🔔 WebSocket 엔드포인트 허용
                         ).permitAll()
-                        .anyRequest().authenticated() // 그 외는 인증 필요
+                        .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
                         .loginPage("/login")
                         .permitAll()
-                        .defaultSuccessUrl("/", true) // 로그인 성공 시 홈으로
+                        .defaultSuccessUrl("/", true)
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("/login")
                         .permitAll()
-                );
+                )
+                .csrf(csrf -> csrf.disable()); // 🔒 WebSocket은 CSRF 제외
 
         return http.build();
     }

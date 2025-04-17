@@ -45,6 +45,10 @@ dependencies {
 	implementation("javax.xml.bind:jaxb-api:2.4.0-b180830.0359")
 	// ✅ 🔥 이게 있어야 sec:authorize 동작함!
 	implementation ("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.webjars:sockjs-client:1.5.1'
+	implementation 'org.webjars:stomp-websocket:2.3.4'
+
 }
 
 tasks.named('test') {

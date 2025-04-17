@@ -4,14 +4,13 @@ import com.easybid.entity.Bid;
 import com.easybid.entity.Payment;
 import com.easybid.entity.User;
 import com.easybid.service.BidService;
+import com.easybid.service.ItemService;
 import com.easybid.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.Comparator;
@@ -24,6 +23,7 @@ public class UserController {
 
     private final UserService userService;
     private final BidService bidService;
+    private final ItemService itemService;
 
     @GetMapping("/signup")
     public String signupForm(Model model) {
@@ -55,6 +55,9 @@ public class UserController {
 
         // 사용자의 전체 입찰 내역 가져오기
         List<Bid> allBids = bidService.getMyBids(email, keyword);
+
+        // 🔄 경매 상태 자동 갱신 (경매 종료 여부 판단)
+        allBids.forEach(bid -> itemService.updateAuctionStatusIfExpired(bid.getItem()));
 
         // 정렬 처리
         switch (sort) {
