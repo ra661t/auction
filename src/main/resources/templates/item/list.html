@@ -93,8 +93,6 @@
     </div>
 </nav>
 
-
-
 <div class="container">
     <h2>경매 목록</h2>
 
@@ -118,9 +116,9 @@
             </select>
 
             <select name="status" style="padding: 6px;" th:value="${status}">
-                <option value="">전체 상태</option>
-                <option value="ACTIVE">진행 중</option>
-                <option value="ENDED">종료됨</option>
+                <option value="ALL" th:selected="${status == 'ALL'}">전체 상태</option>
+                <option value="ACTIVE" th:selected="${status == 'ACTIVE'}">진행 중</option>
+                <option value="ENDED" th:selected="${status == 'ENDED'}">종료됨</option>
             </select>
 
             <button type="submit" style="padding: 6px 12px;">검색</button>
