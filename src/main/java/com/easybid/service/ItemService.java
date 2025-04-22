@@ -44,6 +44,8 @@ public class ItemService {
         return optionalItem;
     }
 
+    
+
     // 전체 상품 목록 (페이징, 종료 여부 확인 포함)
     public Page<Item> getItemList(Pageable pageable) {
         Page<Item> items = itemRepository.findAll(pageable);

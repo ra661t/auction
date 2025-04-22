@@ -28,7 +28,8 @@
         </p>
 
         <div th:if="${item.itemImage}">
-            <img th:src="${item.itemImage}" alt="상품 이미지" width="300">
+            <img th:src="@{/items/image/{id}(id=${item.id})}" alt="상품 이미지" width="300"/>
+            <!-- <img th:src="${item.itemImage}" alt="상품 이미지" width="300"> -->
         </div>
     </div>
 

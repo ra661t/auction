@@ -62,8 +62,8 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         <div class="col" th:each="item : ${topBiddedItems}">
             <div class="card h-100 shadow-sm">
-                <img th:src="${item.itemImage} ?: '/images/default.jpg'" class="card-img-top"
-                     alt="상품 이미지" style="height: 200px; object-fit: cover;"/>
+                <img th:src="@{/items/image/{id}(id=${item.id})}" class="card-img-top"
+                alt="상품 이미지" style="height: 200px; object-fit: cover;"/>
                 <div class="card-body">
                     <h5 class="card-title" th:text="${item.itemName}">상품명</h5>
                     <p class="card-text">

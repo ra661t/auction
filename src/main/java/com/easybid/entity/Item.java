@@ -33,8 +33,12 @@ public class Item {
     @Column(name = "item_description", columnDefinition = "TEXT")
     private String itemDescription;
 
+    // @Column(name = "item_image")
+    // private String itemImage;
+    
+    @Lob  // BLOB 타입으로 매핑
     @Column(name = "item_image")
-    private String itemImage;
+    private byte[] itemImage;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "auction_status", nullable = false)

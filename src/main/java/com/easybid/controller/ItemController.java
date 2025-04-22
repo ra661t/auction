@@ -12,13 +12,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Controller
@@ -73,16 +81,15 @@ public class ItemController {
             }
         }
 
-        Page<Bid> highestBidList;
-        highestBidList = bidService.getHighestBidsForItems(itemList, pageable);
-
         model.addAttribute("itemList", itemList);
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("status", status);
 
 
-        model.addAttribute("highestBids", highestBidList);
+        // Page<Bid> highestBidList;
+        // highestBidList = bidService.getHighestBidsForItems(itemList, pageable);
+        // model.addAttribute("highestBids", highestBidList);
         return "item/list";
     }
 
@@ -96,12 +103,54 @@ public class ItemController {
 
     // 경매 등록 완료
     @PostMapping("/upload")
-    public String createItem(@ModelAttribute Item item, Principal principal, Model model) {
+    public String uploadItem(
+        @RequestParam("itemName") String itemName,
+        @RequestParam("startingPrice") BigDecimal startingPrice,
+        @RequestParam("itemDescription") String itemDescription,
+        @RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime,
+        @RequestParam("itemImage") MultipartFile itemImage,
+        Principal principal, Model model
+    ) throws IOException {
+
+        Item item = new Item();
+        item.setItemName(itemName);
+        item.setStartingPrice(startingPrice);
+        item.setItemDescription(itemDescription);
+        item.setEndTime(endTime);
+
+        if (!itemImage.isEmpty()) {
+            item.setItemImage(itemImage.getBytes());
+        }
+
         itemService.createItem(item, principal.getName());
+
 
         model.addAttribute("message", "경매 상품이 등록되었습니다.");
         model.addAttribute("redirectUrl", "/items/list");
         return "item/alert";
+    }
+    // public String createItem(@ModelAttribute Item item, Principal principal, Model model) {
+    //     itemService.createItem(item, principal.getName());
+
+    //     model.addAttribute("message", "경매 상품이 등록되었습니다.");
+    //     model.addAttribute("redirectUrl", "/items/list");
+    //     return "item/alert";
+    // }
+
+    // 이미지 반환
+    @GetMapping("/image/{id}")
+    public ResponseEntity<byte[]> getImage(@PathVariable("id") Long id) {
+        Optional<Item> itemOpt = itemService.getItem(id);
+
+        if (itemOpt.isPresent() && itemOpt.get().getItemImage() != null) {
+            byte[] imageBytes = itemOpt.get().getItemImage();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_JPEG);
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        }
+
+        return ResponseEntity.notFound().build();
     }
 
     // 경매 상세보기
