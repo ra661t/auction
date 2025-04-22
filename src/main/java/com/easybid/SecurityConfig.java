@@ -46,13 +46,10 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/",                   // 홈
-                                "/signup",             // 회원가입
-                                "/login",              // 로그인
-                                "/css/**", "/js/**", "/images/**", // 정적 자원
-                                "/items/list",         // 경매 목록
-                                "/items/*",            // 경매 상세
-                                "/ws/**"               // 🔔 WebSocket 엔드포인트 허용
+                                "/", "/signup", "/login",
+                                "/css/**", "/js/**", "/images/**",
+                                "/items/list", "/items/*",
+                                "/ws/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -65,7 +62,9 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login")
                         .permitAll()
                 )
-                .csrf(csrf -> csrf.disable()); // 🔒 WebSocket은 CSRF 제외
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/ws/**") // ✅ WebSocket만 CSRF 제외
+                );
 
         return http.build();
     }
