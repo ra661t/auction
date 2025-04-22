@@ -3,6 +3,9 @@ package com.easybid.repository;
 import com.easybid.entity.Bid;
 import com.easybid.entity.Item;
 import com.easybid.entity.User;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +19,9 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     List<Bid> findByItemOrderByBidPriceDesc(Item item); // 입찰가 높은 순
 
     Optional<Bid> findTopByItemOrderByBidPriceDesc(Item item); // 최고가 하나만
+
+    @Query("SELECT b FROM Bid b WHERE b.item = :item AND b.bidPrice = (SELECT MAX(b2.bidPrice) FROM Bid b2 WHERE b2.item = :item)")
+    Page<Bid> findHighestBidForItem(@Param("item") Item item, Pageable pageable);
 
     // ✅ 특정 유저가 입찰한 목록
     List<Bid> findByBidderOrderByBidTimeDesc(User bidder);

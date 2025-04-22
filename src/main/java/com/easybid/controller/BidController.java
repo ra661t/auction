@@ -45,7 +45,11 @@ public class BidController {
         //Long itemId = Long.valueOf(payload.get("itemId").toString());
         //BigDecimal bidAmount = BigDecimal.valueOf(Integer.parseInt(payload.get("bidPrice").toString()));
         
-        bidService.placeBid(itemId, principal.getName(), bidAmount);
+        try {
+            bidService.placeBid(itemId, principal.getName(), bidAmount);
+        } catch (IllegalArgumentException iae) {
+            // TODO: handle exception
+        }
 
         //return ResponseEntity.ok("입찰 완료");
         return "redirect:/items/" + itemId;

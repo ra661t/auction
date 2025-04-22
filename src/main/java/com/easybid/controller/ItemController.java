@@ -2,6 +2,7 @@ package com.easybid.controller;
 
 import com.easybid.entity.Bid;
 import com.easybid.entity.Item;
+import com.easybid.service.BidService;
 import com.easybid.service.ItemService;
 import jakarta.servlet.http.HttpSession;
 
@@ -26,15 +27,17 @@ import java.util.Optional;
 public class ItemController {
 
     private final ItemService itemService;
+    private final BidService bidService;
 
     // 전체 경매 목록
     @GetMapping("/list")
-    public String getAllItems(@RequestParam(required = false) String keyword,
-                              @RequestParam(required = false) String sort,
-                              @RequestParam(required = false) String status,
-                              @RequestParam(defaultValue = "0") int page,
-                              @RequestParam(defaultValue = "10") int size,
-                              Model model) {
+    public String getAllItems(
+                                @RequestParam(name = "keyword", required = false) String keyword,
+                                @RequestParam(name = "sort", required = false) String sort,
+                                @RequestParam(name = "status", required = false) String status,
+                                @RequestParam(name = "page", defaultValue = "0") int page,
+                                @RequestParam(name = "size", defaultValue = "10") int size,
+                                Model model) {
 
         // ✅ 기본 상태값: "ACTIVE"
         if (status == null || status.isBlank()) {
@@ -70,10 +73,16 @@ public class ItemController {
             }
         }
 
+        Page<Bid> highestBidList;
+        highestBidList = bidService.getHighestBidsForItems(itemList, pageable);
+
         model.addAttribute("itemList", itemList);
         model.addAttribute("keyword", keyword);
         model.addAttribute("sort", sort);
         model.addAttribute("status", status);
+
+
+        model.addAttribute("highestBids", highestBidList);
         return "item/list";
     }
 

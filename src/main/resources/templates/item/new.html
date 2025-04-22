@@ -9,7 +9,7 @@
 <div class="container">
     <h2>경매 상품 등록</h2>
 
-    <form th:action="@{/items/upload}" th:object="${item}" method="post">
+    <form th:action="@{/items/upload}" th:object="${item}" method="post" enctype="multipart/form-data">
         <div>
             <label for="itemName">상품명:</label>
             <input type="text" id="itemName" th:field="*{itemName}" required />

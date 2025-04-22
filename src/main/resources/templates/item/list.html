@@ -78,7 +78,7 @@
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                           id="unread-badge">0</span>
                 </a>
-                <a class="btn btn-outline-primary btn-sm" th:href="@{/mypage}">마이페이지</a>
+                <a class="btn btn-outline-primary btn-sm" th:href="@{/mypage/profile}">마이페이지</a>
                 <form th:action="@{/logout}" method="post" style="display:inline;">
                     <button type="submit" class="btn btn-outline-danger btn-sm">로그아웃</button>
                 </form>
@@ -139,12 +139,13 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="item : ${itemList.content}">
+        <tr th:each="item, iterStat : ${itemList.content}">
             <td th:text="${item.id}">1</td>
             <td>
                 <a th:href="@{/items/{id}(id=${item.id})}" th:text="${item.itemName}">상품명</a>
             </td>
             <td th:text="${item.startingPrice}">10000</td>
+            <!-- <td th:text="${highestBids[iterStat.index].bidPrice}">10000</td> -->
             <td th:text="${item.startingPrice}">10000</td> <!-- 입찰 기능 없으므로 시작가로 표시 -->
             <td th:text="${item.auctionStatus}">ACTIVE</td>
             <td th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">2025-04-01</td>

@@ -10,9 +10,14 @@ import com.easybid.repository.PaymentRepository;
 import com.easybid.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -108,5 +113,20 @@ public class BidService {
 
     private boolean isUserHighestBidder(List<Bid> bids, String email) {
         return !bids.isEmpty() && bids.get(0).getBidder().getEmail().equals(email);
+    }
+
+
+    // Page<Item>을 매개변수로 받아서 각 아이템에 대해 가장 높은 입찰을 찾는 메서드
+    public Page<Bid> getHighestBidsForItems(Page<Item> itemList, Pageable pageable) {
+        List<Bid> highestBids = new ArrayList<>();
+
+        for (Item item : itemList) {
+            Bid highestBid = bidRepository.findTopByItemOrderByBidPriceDesc(item).orElseThrow(null);
+            if (highestBid != null) {
+                highestBids.add(highestBid);
+            }
+        }
+
+        return new PageImpl<>(highestBids, pageable, highestBids.size());
     }
 }
