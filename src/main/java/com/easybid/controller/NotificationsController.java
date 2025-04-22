@@ -2,18 +2,22 @@ package com.easybid.controller;
 
 import com.easybid.entity.Notification;
 import com.easybid.entity.User;
+import com.easybid.entity.Bid;
+import com.easybid.entity.Item;
 import com.easybid.service.NotificationService;
 import com.easybid.service.UserService;
+import com.easybid.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -22,6 +26,7 @@ public class NotificationsController {
 
     private final NotificationService notificationService;
     private final UserService userService;
+    private final BidRepository bidRepository;
 
     /**
      * 🔔 알림 목록 페이지 (전체, 읽음, 안읽음 필터링 포함 + 검색 + 페이지네이션)
@@ -82,5 +87,28 @@ public class NotificationsController {
         User user = userService.findByEmail(email);
         long count = notificationService.countUnreadNotifications(user);
         return ResponseEntity.ok((int) count);
+    }
+
+    /**
+     * ⏰ 경매 종료 10분 전 알림 자동 전송 (1분마다 실행)
+     */
+    @Scheduled(fixedRate = 60000)
+    public void notifyBiddersBeforeAuctionEnds() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime targetTimeStart = now.plusMinutes(10);
+        LocalDateTime targetTimeEnd = now.plusMinutes(11);
+
+        List<Bid> bids = bidRepository.findDistinctByItem_EndTimeBetweenAndItem_AuctionStatus(
+                targetTimeStart, targetTimeEnd, Item.AuctionStatus.ACTIVE);
+
+        for (Bid bid : bids) {
+            User bidder = bid.getBidder();
+            Item item = bid.getItem();
+            notificationService.createNotification(
+                    bidder,
+                    "입찰 마감 임박",
+                    "[" + item.getItemName() + "] 경매가 10분 후 종료됩니다. 마지막 입찰 기회를 놓치지 마세요!"
+            );
+        }
     }
 }
