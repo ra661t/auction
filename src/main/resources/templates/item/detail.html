@@ -41,6 +41,7 @@
             <button type="submit">입찰하기</button>
         </form>
     </div>
+    
 
     <!-- 💳 결제 버튼: 낙찰자이면서 아직 결제하지 않았고 경매 종료 이후일 때 -->
     <div th:if="${isWinner and notPaid and item.endTime.isBefore(T(java.time.LocalDateTime).now())}" style="margin-top: 20px;">
@@ -66,9 +67,71 @@
         </form>
     </div>
 
+    <!-- 입찰 정보 확인 -->
+    <div id="bidList" style="margin-top: 20px;"></div>
+
     <p style="margin-top: 20px;">
         <a th:href="@{/items/list}">← 목록으로 돌아가기</a>
     </p>
 </div>
 </body>
+
+<script>
+    function placeBid(itemId) {
+        const bidPrice = document.getElementById("bidAmount").value;
+    
+        fetch("/bids/place", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ itemId, bidPrice })
+        })
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("bidResult").innerText = data;
+            loadBids(itemId); // 입찰 후 목록 갱신
+        })
+        .catch(err => {
+            document.getElementById("bidResult").innerText = "입찰 실패";
+            console.error(err);
+        });
+    }
+    
+    function loadBids(itemId) {
+    fetch(`/bids/${itemId}`)
+        .then(response => {
+            if (!response.ok) throw new Error(`서버 응답 오류: ${response.status}`);
+            return response.text();
+        })
+        .then(text => {
+            console.log("서버 응답:", text);
+            if (!text) throw new Error("응답이 비어 있음");
+
+            const data = JSON.parse(text);
+            const bidListDiv = document.getElementById("bidList");
+            bidListDiv.innerHTML = "";
+
+            data.forEach(bid => {
+                //const bidderEmail = bid.bidder?.email || "알 수 없음";
+                const bidderName = bid.bidder?.name;
+                const bidPrice = bid.bidPrice;
+                const bidTime = new Date(bid.bidTime).toLocaleString();
+
+                const entry = document.createElement("div");
+                entry.textContent = `${bidderName} - ${bidPrice}원 - ${bidTime}`;
+                bidListDiv.appendChild(entry);
+            });
+        })
+        .catch(err => console.error("loadBids 에러:", err));
+}
+
+    
+    // 페이지 로드 시 최초 입찰 목록 불러오기
+    document.addEventListener("DOMContentLoaded", function() {
+        const itemId = [[${item.id}]];
+        loadBids(itemId);
+    });
+</script>
+
 </html>

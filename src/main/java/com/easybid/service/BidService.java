@@ -60,6 +60,9 @@ public class BidService {
     public List<Bid> getBidHistory(Item item) {
         return bidRepository.findByItemOrderByBidPriceDesc(item);
     }
+    public List<Bid> getBidHistory(Long item_id) {
+        return bidRepository.findByItemOrderByBidPriceDesc(itemRepository.findById(item_id).orElseThrow(null));
+    }
 
     /**
      * 마이페이지 - 내가 입찰한 목록 (검색 포함, 낙찰/결제 상태 포함)

@@ -5,6 +5,9 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Entity
 @Getter
 @Setter
@@ -19,10 +22,14 @@ public class Bid {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
+    //@JsonIgnoreProperties({"bids"})
+    @JsonIgnore
     private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bidder_id", nullable = false)
+    @JsonIgnoreProperties({"id", "email", "password", "phone", "imageUrl", "hibernateLazyInitializer", "handler"})
+    //@JsonIgnore
     private User bidder;
 
     @Column(name = "bid_price", nullable = false, precision = 20, scale = 2)
