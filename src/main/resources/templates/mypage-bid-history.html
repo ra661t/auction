@@ -2,83 +2,36 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>마이페이지</title>
+    <title>입찰/낙찰 내역</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        .container {
-            max-width: 960px;
-            margin: 30px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .user-info img {
-            border-radius: 10px;
-        }
-        .tab-link {
-            padding: 8px 12px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            margin-right: 8px;
-            text-decoration: none;
-            color: #333;
-        }
-        .tab-link:hover {
-            background: #ddd;
-            text-decoration: none;
-        }
-        .form-inline input,
-        .form-inline select,
-        .form-inline button {
-            margin-right: 10px;
-        }
-        .form-inline {
-            margin-bottom: 20px;
-        }
-        .badge {
-            font-size: 0.85rem;
-        }
-    </style>
 </head>
 <body>
-<!-- ✅ 상단 내비게이션 -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
     <div class="container-fluid">
         <a class="navbar-brand" th:href="@{/}">🏠 EasyBid</a>
-
         <div class="collapse navbar-collapse justify-content-end">
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/mypage}">마이페이지</a>
-                </li>
-                <li class="nav-item">
-                    <form th:action="@{/logout}" method="post" class="d-inline">
-                        <button class="btn btn-outline-secondary btn-sm" type="submit">로그아웃</button>
-                    </form>
-                </li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/mypage/profile}">마이페이지</a></li>
+                <li class="nav-item"><form th:action="@{/logout}" method="post" class="d-inline">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">로그아웃</button>
+                </form></li>
             </ul>
         </div>
     </div>
 </nav>
 
 <div class="container">
-    <h2 class="mb-4">마이페이지</h2>
+    <h2 class="mb-4">입찰 / 낙찰 내역</h2>
 
-    <!-- 사용자 정보 -->
-    <div class="mb-4 user-info">
-        <p><strong>이메일:</strong> <span th:text="${user.email}">이메일</span></p>
-        <p><strong>이름:</strong> <span th:text="${user.name}">이름</span></p>
-        <p><strong>전화번호:</strong> <span th:text="${user.phone}">전화번호</span></p>
-        <div th:if="${user.imageUrl}">
-            <img th:src="${user.imageUrl}" alt="프로필 이미지" width="150" height="150">
-        </div>
-        <div th:if="${user.imageUrl == null}">
-            <p class="text-muted">등록된 이미지가 없습니다.</p>
-        </div>
-    </div>
-
-    <hr>
+    <!-- 탭 링크 -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/mypage/profile}">👤 내 정보 관리</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/mypage/bid-history}">📦 입찰/낙찰 내역</a>
+        </li>
+    </ul>
 
     <!-- 검색 및 필터 -->
     <form th:action="@{/mypage}" method="get" class="form-inline d-flex flex-wrap align-items-center">

@@ -103,6 +103,11 @@ public class ItemService {
                 Item.AuctionStatus.ACTIVE, LocalDateTime.now());
     }
 
+    // 입찰 수 기준 인기 아이템 조회
+    public List<Item> getTopBiddedItems(int limit) {
+        return itemRepository.findTopBiddedItems(Pageable.ofSize(limit));
+    }
+
     // 키워드로 검색
     public Page<Item> searchItemsByName(String keyword, Pageable pageable) {
         Page<Item> items = itemRepository.findByItemNameContainingIgnoreCase(keyword, pageable);

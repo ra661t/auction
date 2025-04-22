@@ -2,6 +2,7 @@ package com.easybid.service;
 
 import com.easybid.entity.User;
 import com.easybid.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,4 +28,17 @@ public class UserService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
     }
+    @Transactional
+    public boolean changePassword(String email, String currentPassword, String newPassword) {
+        User user = findByEmail(email);
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            return false; // 현재 비밀번호 불일치
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        return true;
+    }
+
+
 }

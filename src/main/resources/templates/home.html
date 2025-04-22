@@ -11,17 +11,41 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
     <div class="container-fluid">
         <a class="navbar-brand" href="/">🏠 EasyBid</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-        <ul class="navbar-nav ms-auto">
-            <!-- 🔔 알림 아이콘 (로그인한 사용자만 보이도록 설정) -->
-            <li class="nav-item" sec:authorize="isAuthenticated()">
-                <a class="nav-link position-relative" th:href="@{/notifications}">
-                    <i class="bi bi-bell-fill"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                          id="unread-badge">0</span>
-                </a>
-            </li>
-        </ul>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <!-- 🔐 로그인된 사용자 -->
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <a th:href="@{/mypage/profile}" class="nav-link">마이페이지</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-danger btn-sm ms-2">로그아웃</button>
+                    </form>
+                </li>
+
+                <!-- 🔓 로그인하지 않은 사용자 -->
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a th:href="@{/login}" class="nav-link">로그인</a>
+                </li>
+                <li class="nav-item" sec:authorize="isAnonymous()">
+                    <a th:href="@{/signup}" class="nav-link">회원가입</a>
+                </li>
+
+                <!-- 🔔 알림 아이콘 -->
+                <li class="nav-item ms-3" sec:authorize="isAuthenticated()">
+                    <a class="nav-link position-relative" th:href="@{/notifications}">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              id="unread-badge">0</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 </nav>
 
@@ -31,52 +55,32 @@
         <p class="text-muted">서비스를 이용해 주셔서 감사합니다.</p>
     </div>
 
-    <!-- ✅ 로그인 여부에 따른 버튼 표시 -->
-    <div class="text-center mb-4">
-        <!-- 🔐 로그인 된 사용자 -->
-        <div sec:authorize="isAuthenticated()">
-            <a th:href="@{/mypage}" class="btn btn-outline-primary me-2">마이페이지</a>
-            <form th:action="@{/logout}" method="post" style="display: inline;">
-                <button type="submit" class="btn btn-outline-danger">로그아웃</button>
-            </form>
-        </div>
-
-        <!-- 🔓 로그인하지 않은 사용자 -->
-        <div sec:authorize="isAnonymous()">
-            <a th:href="@{/login}" class="btn btn-outline-success me-2">로그인</a>
-            <a th:href="@{/signup}" class="btn btn-outline-primary">회원가입</a>
-        </div>
-    </div>
-
     <hr class="my-4"/>
 
-    <!-- 🔳 경매 카드 UI -->
-    <div>
-        <h4 class="mb-4">🔥 진행 중인 경매</h4>
-        <div class="row row-cols-1 row-cols-md-3 g-4">
-            <div class="col" th:each="item : ${itemList}">
-                <div class="card h-100 shadow-sm">
-                    <img th:src="${item.itemImage} ?: '/images/default.jpg'"
-                         class="card-img-top"
-                         alt="상품 이미지"
-                         style="height: 200px; object-fit: cover;"/>
-                    <div class="card-body">
-                        <h5 class="card-title" th:text="${item.itemName}">상품명</h5>
-                        <p class="card-text">
-                            <strong>시작가:</strong> <span th:text="${item.startingPrice}">10000</span> 원<br/>
-                            <strong>종료:</strong> <span th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">2025-04-01</span><br/>
-                            <strong>상태:</strong>
-                            <span th:if="${item.endTime.isAfter(T(java.time.LocalDateTime).now())}" class="text-success">진행 중</span>
-                            <span th:if="${item.endTime.isBefore(T(java.time.LocalDateTime).now())}" class="text-secondary">종료</span>
-                        </p>
-                    </div>
-                    <div class="card-footer bg-white text-center">
-                        <a th:href="@{/items/{id}(id=${item.id})}" class="btn btn-sm btn-outline-primary">자세히 보기</a>
-                    </div>
+    <!-- 🔳 인기 경매 TOP 3 -->
+    <h4 class="mb-4">🔥 입찰 인기 경매 TOP 3</h4>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col" th:each="item : ${topBiddedItems}">
+            <div class="card h-100 shadow-sm">
+                <img th:src="${item.itemImage} ?: '/images/default.jpg'" class="card-img-top"
+                     alt="상품 이미지" style="height: 200px; object-fit: cover;"/>
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${item.itemName}">상품명</h5>
+                    <p class="card-text">
+                        <strong>입찰 수:</strong> <span th:text="${item.bids.size()}">0</span><br/>
+                        <strong>시작가:</strong> <span th:text="${item.startingPrice}">10000</span> 원<br/>
+                        <strong>종료:</strong> <span th:text="${#temporals.format(item.endTime, 'yyyy-MM-dd HH:mm')}">2025-04-01</span>
+                    </p>
+                </div>
+                <div class="card-footer bg-white text-center">
+                    <a th:href="@{/items/{id}(id=${item.id})}" class="btn btn-sm btn-outline-primary">자세히 보기</a>
                 </div>
             </div>
         </div>
-        <div class="text-end mt-3">
+    </div>
+
+
+    <div class="text-end mt-3">
             <a th:href="@{/items/list}" class="btn btn-sm btn-outline-secondary">전체 경매 보기 →</a>
         </div>
     </div>
@@ -144,5 +148,6 @@
 
     document.addEventListener("DOMContentLoaded", connectWebSocket);
 </script>
+
 </body>
 </html>
