@@ -57,9 +57,17 @@ public class ItemController {
 
         // ✅ 필터 조합 처리
         if (keyword != null && !keyword.isBlank()) {
-            itemList = itemService.searchItemsByNameAndStatus(keyword, status, pageable);
+            if ("ALL".equalsIgnoreCase(status)) {
+                itemList = itemService.searchItemsByName(keyword, pageable);
+            } else {
+                itemList = itemService.searchItemsByNameAndStatus(keyword, status, pageable);
+            }
         } else {
-            itemList = itemService.searchItemsByStatus(status, pageable);
+            if ("ALL".equalsIgnoreCase(status)) {
+                itemList = itemService.getItemList(pageable);
+            } else {
+                itemList = itemService.searchItemsByStatus(status, pageable);
+            }
         }
 
         model.addAttribute("itemList", itemList);

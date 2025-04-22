@@ -2,16 +2,17 @@ package com.easybid.service;
 
 import com.easybid.entity.*;
 import com.easybid.repository.*;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -142,5 +143,29 @@ public class NotificationService {
     @Transactional
     public void deleteNotification(Long id) {
         notificationRepository.deleteById(id);
+    }
+
+    /**
+     * ⏰ 경매 종료 10분 전 입찰자 알림 자동 전송
+     */
+    @Scheduled(fixedRate = 60000) // 1분마다 실행
+    public void notifyBiddersBeforeAuctionEnds() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime start = now.plusMinutes(10);
+        LocalDateTime end = now.plusMinutes(11);
+
+        List<Bid> bids = bidRepository.findDistinctByItem_EndTimeBetweenAndItem_AuctionStatus(
+                start, end, Item.AuctionStatus.ACTIVE);
+
+        for (Bid bid : bids) {
+            User bidder = bid.getBidder();
+            Item item = bid.getItem();
+
+            createNotification(
+                    bidder,
+                    "경매 마감 임박",
+                    "[" + item.getItemName() + "] 경매가 10분 후 종료됩니다. 마지막 입찰 기회를 놓치지 마세요!"
+            );
+        }
     }
 }

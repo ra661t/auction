@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,4 +27,11 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     // ✅ 특정 상품에 입찰한 모든 사용자 조회 (중복 제거)
     @Query("SELECT DISTINCT b.bidder FROM Bid b WHERE b.item = :item")
     List<User> findDistinctBiddersByItem(@Param("item") Item item);
+
+    // ✅ 경매 종료 10분 전 대상 입찰자 조회 (알림 전용)
+    @Query("SELECT DISTINCT b FROM Bid b WHERE b.item.endTime BETWEEN :start AND :end AND b.item.auctionStatus = :status")
+    List<Bid> findDistinctByItem_EndTimeBetweenAndItem_AuctionStatus(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("status") Item.AuctionStatus status);
 }

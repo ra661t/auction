@@ -22,8 +22,8 @@ public class LoginController {
 
     @GetMapping("/")
     public String home(Model model) {
-        List<Item> itemList = itemService.getTop6ActiveItems();
-        model.addAttribute("itemList", itemList);
+        List<Item> topBiddedItems = itemService.getTopBiddedItems(3); // 입찰 많은 순
+        model.addAttribute("topBiddedItems", topBiddedItems);
         return "home";
     }
 }

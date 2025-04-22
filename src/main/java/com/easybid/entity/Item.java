@@ -43,6 +43,9 @@ public class Item {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL)
+    private java.util.List<Bid> bids = new java.util.ArrayList<>();
+
     // 경매 상태 열거형
     public enum AuctionStatus {
         ACTIVE,

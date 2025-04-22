@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>내 정보 관리</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" th:href="@{/}">🏠 EasyBid</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" th:href="@{/mypage/profile}">마이페이지</a></li>
+                <li class="nav-item"><form th:action="@{/logout}" method="post" class="d-inline">
+                    <button class="btn btn-outline-secondary btn-sm" type="submit">로그아웃</button>
+                </form></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4">내 정보 관리</h2>
+
+    <!-- 탭 링크 -->
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active" th:href="@{/mypage/profile}">👤 내 정보 관리</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" th:href="@{/mypage/bid-history}">📦 입찰/낙찰 내역</a>
+        </li>
+    </ul>
+
+    <div class="user-info mb-4">
+        <p><strong>이메일:</strong> <span th:text="${user.email}">이메일</span></p>
+        <p><strong>이름:</strong> <span th:text="${user.name}">이름</span></p>
+        <p><strong>전화번호:</strong> <span th:text="${user.phone}">전화번호</span></p>
+
+        <div th:if="${user.imageUrl}">
+            <img th:src="${user.imageUrl}" alt="프로필 이미지" width="150" height="150" class="rounded">
+        </div>
+        <div th:if="${user.imageUrl == null}">
+            <p class="text-muted">등록된 이미지가 없습니다.</p>
+        </div>
+    </div>
+
+    <!-- 향후 수정 버튼 추가 가능 -->
+    <a class="btn btn-sm btn-outline-primary" th:href="@{/mypage/profile/edit}">정보 수정하기</a>
+</div>
+</body>
+<div th:replace="fragments/footer :: footer"></div>
+</html>
